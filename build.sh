@@ -3,15 +3,15 @@ source common.sh
 set_keys
 export VERSION=$(grep -m1 -o '[0-9]\+\(\.[0-9]\+\)\{3\}' vanadium/args.gn)
 export CHROMIUM_SOURCE=https://chromium.googlesource.com/chromium/src.git # https://github.com/chromium/chromium.git
-export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive LC_ALL=C
 
 # Note: APT mirror and parallel download optimization is handled by the CI workflow
 # (vegardit/fast-apt-mirror.sh@v1). Keep APT configuration here minimal to avoid conflicts.
-sudo apt update
-sudo apt install -y sudo lsb-release file nano git curl python3 python3-pillow
+sudo apt-get update
+sudo apt-get install -y sudo lsb-release file nano git curl python3 python3-pillow
 
 # https://github.com/uazo/cromite/blob/master/tools/images/chr-source/prepare-build.sh
-if [ ! -d "depot_tools" ]; then
+if [[ ! -d "depot_tools" ]]; then
   git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 fi
 export PATH="$PWD/depot_tools:$PATH"
@@ -121,14 +121,15 @@ use_lld = true
 # for Chrome APK builds in this environment. This may increase the final APK
 # size by ~2–3% and slightly reduce runtime performance; see CLAUDE.md line 184
 # for details. This trade-off is considered acceptable for our use case.
-use_thin_lto = false
-# thin_lto_enable_optimizations = false
-enable_precompiled_headers = true
+# TODO: speed up build while using lto
+use_thin_lto = true
+thin_lto_enable_optimizations = true
+enable_precompiled_headers = false
 enable_nacl = false
 use_goma = false
 enable_backup_ref_ptr_support = false
-enable_pointer_compression_support = false
-v8_enable_pointer_compression = false
+enable_pointer_compression_support = true
+v8_enable_pointer_compression = true
 EOF
 gn gen out/Default # gn args out/Default; echo 'treat_warnings_as_errors = false' >> out/Default/args.gn
 # Use aggressive parallelism: nproc + 4 for better core utilization
