@@ -65,7 +65,6 @@ sed -i '/feature_overrides.EnableFeature(::features::kSkipVulkanBlocklist);/d' c
 sed -i '/feature_overrides.EnableFeature(::features::kDefaultANGLEVulkan);/d' chrome/browser/chrome_browser_field_trials.cc
 sed -i '/feature_overrides.EnableFeature(::features::kVulkanFromANGLE);/d' chrome/browser/chrome_browser_field_trials.cc
 sed -i '/feature_overrides.EnableFeature(::features::kDefaultPassthroughCommandDecoder);/d' chrome/browser/chrome_browser_field_trials.cc
-: << TOOLBAR_PHONE
 sed -i '/<ViewStub/{N;N;N;N;N;N; /optional_button_stub/a\
 \
         <ViewStub\
@@ -74,8 +73,11 @@ sed -i '/<ViewStub/{N;N;N;N;N;N; /optional_button_stub/a\
             android:layout_width="wrap_content"\
             android:layout_height="match_parent" />
 }' chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
-sed -i 's/extension_toolbar_baseline_width">600dp/extension_toolbar_baseline_width">0dp/' chrome/browser/ui/android/extensions/java/res/values/dimens.xml
-TOOLBAR_PHONE
+sed -i 's|<dimen name="extension_toolbar_baseline_width">600dp</dimen>|<dimen name="extension_toolbar_baseline_width">0dp</dimen>|' chrome/browser/ui/android/extensions/java/res/values/dimens.xml
+if ! grep -q '<dimen name="extension_toolbar_baseline_width">0dp</dimen>' chrome/browser/ui/android/extensions/java/res/values/dimens.xml; then
+  echo "Error: Failed to set extension_toolbar_baseline_width to 0dp in dimens.xml" >&2
+  exit 1
+fi
 
 cat > out/Default/args.gn <<EOF
 chrome_public_manifest_package = "io.github.jqssun.helium"
