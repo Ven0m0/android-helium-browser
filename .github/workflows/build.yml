@@ -71,9 +71,11 @@ jobs:
 
       - name: Additional cleanup
         run: |
-          sudo apt-get clean -yq
-          sudo apt-get autoclean -y
-          sudo apt-get autoremove --purge -yq
+          sudo apt-get clean -yq 2>/dev/null || true
+          sudo apt-get autoclean -y 2>/dev/null || true
+          sudo apt-get autoremove --purge -yq 2>/dev/null || true
+          sudo journalctl --rotate && sudo journalctl --vacuum-time=1s 2>/dev/null || true
+          sudo rm -rf /var/cache/apt/archives/ 2>/dev/null || true
           df -h
 
       - name: Update 
