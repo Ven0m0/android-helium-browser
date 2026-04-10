@@ -117,7 +117,8 @@ autoninja -C out/Default chrome_public_apk
 mkdir -p out/tmp out/release
 mv $(find out/Default/apks -name 'Chrome*.apk') out/tmp/$VERSION-arm64-v8a.apk
 
-sudo apt-get update && sudo apt-get install -y libgcc-s1:i386 || exit 1
+sudo apt-get update || exit 1
+sudo apt-get install -y libgcc-s1:i386 || exit 1
 sed -i 's/target_cpu = "arm64"/target_cpu = "arm"/' out/Default/args.gn
 autoninja -C out/Default chrome_public_apk
 mv $(find out/Default/apks -name 'Chrome*.apk') out/tmp/$VERSION-armeabi-v7a.apk
