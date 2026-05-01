@@ -60,23 +60,22 @@ sed -i '/feature_overrides.EnableFeature(::features::kSkipVulkanBlocklist);/d' c
 sed -i '/feature_overrides.EnableFeature(::features::kDefaultANGLEVulkan);/d' chrome/browser/chrome_browser_field_trials.cc
 sed -i '/feature_overrides.EnableFeature(::features::kVulkanFromANGLE);/d' chrome/browser/chrome_browser_field_trials.cc
 sed -i '/feature_overrides.EnableFeature(::features::kDefaultPassthroughCommandDecoder);/d' chrome/browser/chrome_browser_field_trials.cc
-: << TOOLBAR_PHONE
 sed -i '/<ViewStub/{N;N;N;N;N;N; /optional_button_stub/a\
 \
         <ViewStub\
-            android:id="@+id/extension_toolbar_container_stub"\
-            android:inflatedId="@+id/extension_toolbar_container"\
+            android:id="@+id/extensions_toolbar_container_stub"\
+            android:inflatedId="@+id/extensions_toolbar_container"\
             android:layout_width="wrap_content"\
             android:layout_height="match_parent" />
 }' chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
-sed -i 's/extension_toolbar_baseline_width">600dp/extension_toolbar_baseline_width">0dp/' chrome/browser/ui/android/extensions/java/res/values/dimens.xml
-TOOLBAR_PHONE
+sed -i 's|(ToolbarTablet) mToolbarLayout,|mToolbarLayout,|' chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
 
+sudo dpkg --add-architecture i386; sudo apt-get update; sudo apt-get install -y libgcc-s1:i386
 cat > out/Default/args.gn <<EOF
 chrome_public_manifest_package = "io.github.jqssun.helium"
 is_desktop_android = true
 target_os = "android"
-target_cpu = "arm64"
+target_cpu = "arm"
 is_component_build = false
 is_debug = false
 is_official_build = true
@@ -95,9 +94,8 @@ google_default_client_id = "x"
 google_default_client_secret = "x"
 
 use_siso = true
-use_login_database_as_backend = false
+use_login_database_as_backend = true
 build_contextual_search = false
-build_with_tflite_lib = true
 dcheck_always_on = false
 enable_iterator_debugging = false
 exclude_unwind_tables = false
@@ -111,18 +109,18 @@ include_both_v8_snapshots = false
 include_both_v8_snapshots_android_secondary_abi = false
 generate_linker_map = true
 EOF
-gn gen out/Default # gn args out/Default; echo 'treat_warnings_as_errors = false' >> out/Default/args.gn
-autoninja -C out/Default chrome_public_apk
-mkdir -p out/tmp out/release
-mv $(find out/Default/apks -name 'Chrome*.apk') out/tmp/$VERSION-arm64-v8a.apk
 
-sudo dpkg --add-architecture i386; sudo apt-get update; sudo apt-get install -y libgcc-s1:i386  
-sed -i 's/target_cpu = "arm64"/target_cpu = "arm"/' out/Default/args.gn
+gn gen out/Default # gn args out/Default; echo 'treat_warnings_as_errors = false' >> out/Default/args.gn
+mkdir -p out/tmp out/release
 autoninja -C out/Default chrome_public_apk
 mv $(find out/Default/apks -name 'Chrome*.apk') out/tmp/$VERSION-armeabi-v7a.apk
 
+sed -i 's/target_cpu = "arm"/target_cpu = "arm64"/' out/Default/args.gn
+autoninja -C out/Default chrome_public_apk
+mv $(find out/Default/apks -name 'Chrome*.apk') out/tmp/$VERSION-arm64-v8a.apk
+
 export PATH=$PWD/third_party/jdk/current/bin/:$PATH
 export ANDROID_HOME=$PWD/third_party/android_sdk/public
-sign_apk out/tmp/$VERSION-arm64-v8a.apk out/release/$VERSION-arm64-v8a.apk
 sign_apk out/tmp/$VERSION-armeabi-v7a.apk out/release/$VERSION-armeabi-v7a.apk
+sign_apk out/tmp/$VERSION-arm64-v8a.apk out/release/$VERSION-arm64-v8a.apk
 rm -rf $SCRIPT_DIR/keys
