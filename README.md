@@ -22,7 +22,7 @@ Once you select **Add to Chrome**, [the extension will be installed in the backg
 
 ### Using Extensions
 
-To use [an extension's popup](https://developer.chrome.com/docs/extensions/develop/ui/add-popup), first open extensions menu, then select the menu button <kbd>⋮</kbd> next to the extension and select **Pin to toolbar**. Open the extension's popup using the extension's toolbar button.
+To use [an extension's popup](https://developer.chrome.com/docs/extensions/develop/ui/add-popup), first open the extensions menu, then select the menu button <kbd>⋮</kbd> next to the extension and select **Pin to toolbar**. Open the extension's popup using the extension's toolbar button.
 
 ### Debug URLs
 
