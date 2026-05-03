@@ -18,7 +18,11 @@ An experimental Chromium-based web browser for Android with extensions support, 
 Navigate to [Chrome Web Store](https://chromewebstore.google.com/), then enable **Desktop site** by selecting the menu button <kbd>⋮</kbd> in the top right corner and ensure the option is checked. Select **Okay** and proceed as normal if prompted with:
 > The Chrome Web Store is only available on desktop.
  
-Once you select **Add to Chrome**, [the extension will be installed in the background](https://support.google.com/chrome_webstore/answer/2664769) until the button changes into **Remove from Chrome**.
+Once you select **Add to Chrome**, [the extension will be installed in the background](https://support.google.com/chrome_webstore/answer/2664769) until the button changes to **Remove from Chrome**.
+
+### Using Extensions
+
+To use [an extension's popup](https://developer.chrome.com/docs/extensions/develop/ui/add-popup), first open the extensions menu, then select the menu button <kbd>⋮</kbd> next to the extension and select **Pin to toolbar**. Open the extension's popup using the extension's toolbar button.
 
 ### Debug URLs
 
