@@ -3,18 +3,20 @@ source common.sh
 set_keys
 export VERSION=$(grep -m1 -o '[0-9]\+\(\.[0-9]\+\)\{3\}' vanadium/args.gn)
 export CHROMIUM_SOURCE=https://chromium.googlesource.com/chromium/src.git # https://github.com/chromium/chromium.git
-export DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive LC_ALL=C
 sudo apt-get update
 sudo apt-get install -y sudo lsb-release file nano git curl python3 python3-pillow
 
 # https://github.com/uazo/cromite/blob/master/tools/images/chr-source/prepare-build.sh
-git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+if [[ ! -d "depot_tools" ]]; then
+  git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+fi
 export PATH="$PWD/depot_tools:$PATH"
 mkdir -p chromium/src/out/Default; cd chromium
 gclient root; cd src
 git init
 git remote add origin $CHROMIUM_SOURCE
-git fetch --depth 2 $CHROMIUM_SOURCE +refs/tags/$VERSION:chromium_$VERSION
+git fetch --depth 1 $CHROMIUM_SOURCE +refs/tags/$VERSION:chromium_$VERSION
 git checkout $VERSION
 export COMMIT=$(git show-ref -s $VERSION | head -n1)
 cat > ../.gclient <<EOF
@@ -43,7 +45,7 @@ replace "$SCRIPT_DIR/vanadium/patches" "Vanadium" "Helium"
 replace "$SCRIPT_DIR/vanadium/patches" "vanadium" "helium"
 git am --whitespace=nowarn --keep-non-patch $SCRIPT_DIR/vanadium/patches/*.patch
 
-gclient sync -D --no-history --nohooks
+gclient sync -D --no-history --nohooks --shallow -j $(nproc)
 gclient runhooks
 rm -rf third_party/angle/third_party/VK-GL-CTS/
 ./build/install-build-deps.sh --no-prompt
@@ -69,6 +71,7 @@ sed -i '/<ViewStub/{N;N;N;N;N;N; /optional_button_stub/a\
             android:layout_height="match_parent" />
 }' chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
 sed -i 's|(ToolbarTablet) mToolbarLayout,|mToolbarLayout,|' chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
+sed -i 's|<dimen name="extension_toolbar_baseline_width">600dp</dimen>|<dimen name="extension_toolbar_baseline_width">0dp</dimen>|' chrome/browser/ui/android/extensions/java/res/values/dimens.xml
 
 sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install -y libgcc-s1:i386
 cat > out/Default/args.gn <<EOF
@@ -79,7 +82,7 @@ target_cpu = "arm"
 is_component_build = false
 is_debug = false
 is_official_build = true
-symbol_level = 1
+symbol_level = 0
 disable_fieldtrial_testing_config = true
 ffmpeg_branding = "Chrome"
 proprietary_codecs = true
@@ -107,7 +110,23 @@ enable_av1_decoder = true
 enable_dav1d_decoder = true
 include_both_v8_snapshots = false
 include_both_v8_snapshots_android_secondary_abi = false
-generate_linker_map = true
+generate_linker_map = false
+
+# Build performance optimizations
+use_lld = true
+# NOTE: ThinLTO is intentionally disabled to significantly reduce build times
+# for Chrome APK builds in this environment. This may increase the final APK
+# size by ~2–3% and slightly reduce runtime performance; see CLAUDE.md line 184
+# for details. This trade-off is considered acceptable for our use case.
+# TODO: speed up build while using lto
+use_thin_lto = true
+thin_lto_enable_optimizations = true
+enable_precompiled_headers = false
+enable_nacl = false
+use_goma = false
+enable_backup_ref_ptr_support = false
+enable_pointer_compression_support = true
+v8_enable_pointer_compression = true
 EOF
 
 gn gen out/Default # gn args out/Default; echo 'treat_warnings_as_errors = false' >> out/Default/args.gn
