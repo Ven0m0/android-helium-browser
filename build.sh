@@ -39,11 +39,11 @@ git config --add remote.origin.fetch '+refs/tags/*:refs/tags/*'
 # https://grapheneos.org/build#browser-and-webview
 rm -rf $SCRIPT_DIR/vanadium/patches/*trichrome-{apk-build-targets,browser-apk-targets}.patch
 rm -rf $SCRIPT_DIR/vanadium/patches/*{detailed,supported}-language*.patch
+rm -rf $SCRIPT_DIR/vanadium/patches/*component-updates.patch
 # rm -rf $SCRIPT_DIR/vanadium/patches/*crashpad*.patch
 replace "$SCRIPT_DIR/vanadium/patches" "VANADIUM" "HELIUM"
 replace "$SCRIPT_DIR/vanadium/patches" "Vanadium" "Helium"
 replace "$SCRIPT_DIR/vanadium/patches" "vanadium" "helium"
-replace "$SCRIPT_DIR/vanadium/patches" ".helium.app" ".vanadium.app" # components
 git am --whitespace=nowarn --keep-non-patch $SCRIPT_DIR/vanadium/patches/*.patch
 
 gclient sync -D --no-history --nohooks
